@@ -164,113 +164,161 @@ List students in Year 4.
 
 Show students admitted in 2022.
 
+Below is properly formatted **Markdown**.
+You can copy this directly into `README.md` — headings and code blocks will render correctly.
+
+---
+
 # 🚀 Setup & Run Instructions
-1️⃣ Install Ollama
 
-Download and install:
+## 1️⃣ Install Ollama
 
-https://ollama.com
+Download and install Ollama:
+
+👉 [https://ollama.com](https://ollama.com)
 
 Verify installation:
 
+```bash
 ollama --version
+```
 
+Pull the required model (example: llama3):
 
-Pull required model (example: llama3):
-
+```bash
 ollama pull llama3
+```
 
+Test the model:
 
-Test model:
-
+```bash
 ollama run llama3
+```
 
-2️⃣ Clone Project
+---
+
+## 2️⃣ Clone the Project
+
+```bash
 git clone <your-repo-url>
 cd student-attendance-qa
+```
 
-3️⃣ Create Virtual Environment (Recommended)
+---
+
+## 3️⃣ Create Virtual Environment (Recommended)
+
+Create environment:
+
+```bash
 python -m venv venv
+```
 
+Activate environment:
 
-Activate:
+### Windows
 
-Windows
-
+```bash
 venv\Scripts\activate
+```
 
+### Mac / Linux
 
-Mac/Linux
-
+```bash
 source venv/bin/activate
+```
 
-4️⃣ Install Requirements
+---
 
-Make sure you have a requirements.txt file, then run:
+## 4️⃣ Install Dependencies
 
+Ensure `requirements.txt` exists, then run:
+
+```bash
 pip install -r requirements.txt
+```
 
-5️⃣ Run the Application
+---
 
-If using Streamlit:
+## 5️⃣ Run the Application
 
+### ▶ If using Streamlit UI
+
+```bash
 streamlit run app.py
+```
 
+### ▶ If using CLI version
 
-If using CLI script:
-
+```bash
 python main.py
+```
 
-📁 Example requirements.txt
+---
+
+# 📁 Example `requirements.txt`
+
+```text
 streamlit
 langchain
 langchain-community
 ollama
-sqlite3
 pydantic
+```
 
-🔒 Security Design
+> **Note:** `sqlite3` is included with Python by default and does not need installation.
 
-No raw SQL from LLM
+---
 
-Strict table & column whitelist
+# 🔒 Security Design
 
-Parameterized queries
+This system is designed with strict guardrails:
 
-Deterministic SQL builder
+* ❌ No raw SQL generation from LLM
+* ✅ Strict table whitelist validation
+* ✅ Strict column whitelist validation
+* ✅ Deterministic SQL builder
+* ✅ Parameterized queries (prevents SQL injection)
+* ✅ Date normalization
+* ✅ Operator correction
+* ✅ Plan validation before execution
 
-Date range normalization
+The LLM is used only for reasoning and structured planning — never for direct SQL execution.
 
-Operator correction
+---
 
-Guardrail validation before execution
+# 🧪 Example Query
 
-🧪 Example Query
+### User Question
 
-User asks:
-
+```
 How many students were born in March 2016?
+```
 
-Generated SQL:
+### Generated SQL
 
+```sql
 SELECT COUNT(DISTINCT DOB)
 FROM detailed_attendance
 WHERE DOB BETWEEN ? AND ?;
+```
+
+---
 
 # 📌 Key Principles
 
-LLM for reasoning only
+* LLM for reasoning only
+* Deterministic SQL execution
+* Guardrailed architecture
+* Safe parameter binding
+* Modular multi-layer pipeline
 
-Deterministic SQL execution
-
-Guardrailed architecture
-
-Safe parameter binding
-
-Modular layered pipeline
+---
 
 # 📜 License
 
 MIT License
 
-If you need help extending the system (range logic, joins, advanced filters, multi-table queries), you can expand the validation and SQL builder layers without modifying the LLM logic.
+---
+
+If you want to extend the system (range logic, joins, advanced filters, multi-table queries), enhance the **validation layer** and **SQL builder layer** without modifying the LLM reasoning layer.
