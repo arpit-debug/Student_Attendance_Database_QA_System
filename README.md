@@ -1,4 +1,4 @@
-🎓 Student Attendance Database QA System
+# 🎓 Student Attendance Database QA System
 
 Natural Language → Guardrailed SQL Assistant
 
@@ -17,7 +17,7 @@ Multi-layer guardrailed SQL pipeline
 # 📌 System Daigram
 ![Demo of the app](Diagram.png)
 
-📌 System Overview
+# 📌 System Overview
 
 User Question
 → Query Classification (LLM)
@@ -32,6 +32,7 @@ All SQL is validated, parameterized, and deterministic.
 
 
 🧠 Architecture
+```text
 USER (Streamlit UI)
         │
         ▼
@@ -73,9 +74,10 @@ EXECUTE (SQLite)                ❌ No LLM
         ▼
 LAYER 5 — generate_answer()     ✅ LLM
 → Converts result rows into natural language
+```
 
-🗄 Database Tables
-1️⃣ detailed_attendance
+# 🗄 Database Tables
+## 1️⃣ detailed_attendance
 
 Session-level attendance records.
 
@@ -103,7 +105,7 @@ Key_Stage
 
 Reg
 
-2️⃣ attendance_summary
+## 2️⃣ attendance_summary
 
 Year-level aggregated totals per student.
 
@@ -121,7 +123,7 @@ Unauthorised absence
 
 Grand_Total
 
-3️⃣ attendance_mark_description
+## 3️⃣ attendance_mark_description
 
 Reference table for attendance codes.
 
@@ -137,7 +139,7 @@ Physical_Meaning
 
 Status
 
-❓ Supported Question Types
+## ❓ Supported Question Types
 🔹 Record Lookup
 
 What is the date of birth of Arjan Jha Crasto?
@@ -162,7 +164,7 @@ List students in Year 4.
 
 Show students admitted in 2022.
 
-🚀 Setup & Run Instructions
+# 🚀 Setup & Run Instructions
 1️⃣ Install Ollama
 
 Download and install:
@@ -255,7 +257,7 @@ SELECT COUNT(DISTINCT DOB)
 FROM detailed_attendance
 WHERE DOB BETWEEN ? AND ?;
 
-📌 Key Principles
+# 📌 Key Principles
 
 LLM for reasoning only
 
@@ -267,7 +269,7 @@ Safe parameter binding
 
 Modular layered pipeline
 
-📜 License
+# 📜 License
 
 MIT License
 
