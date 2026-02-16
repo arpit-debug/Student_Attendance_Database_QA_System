@@ -15,6 +15,7 @@ The system converts natural language questions into validated SQL queries and ex
 ![Demo of the app](Diagram.png)
 # 📌 System Architecture
 
+```text
 +------------------------------------------------------+
 |                    USER (CLI / UI)                   |
 +---------------------------+--------------------------+
@@ -26,8 +27,8 @@ The system converts natural language questions into validated SQL queries and ex
                             |
                             v
 ┌──────────────────────────────────────────────────────┐
-│ LAYER 1 — QUERY CLASSIFICATION                      │
-│ Function: classify_query()                          │
+│ LAYER 1 — QUERY CLASSIFICATION                       │
+│ Function: classify_query()                           │
 │                                                      │
 │ 🔹 LLM USED HERE                                     │
 │ → Determines intent: aggregate | list | lookup       │
@@ -35,23 +36,20 @@ The system converts natural language questions into validated SQL queries and ex
                             |
                             v
 ┌──────────────────────────────────────────────────────┐
-│ LAYER 2 — STRUCTURED PLAN EXTRACTION                │
-│ Function: extract_plan()                            │
+│ LAYER 2 — STRUCTURED PLAN EXTRACTION                 │
+│ Function: extract_plan()                             │
 │                                                      │
 │ 🔹 LLM USED HERE                                     │
-│ → Generates Structured JSON Plan                    │
-│   {                                                  │
-│     table, select_column, aggregation, filters      │
-│   }                                                  │
+│ → Generates Structured JSON Plan                     │
+│   { table, select_column, aggregation, filters }     │
 └──────────────────────────────────────────────────────┘
                             |
                             v
 ┌──────────────────────────────────────────────────────┐
-│ LAYER 3 — VALIDATION & GUARDRAILS                   │
-│ Function: validate_plan()                           │
+│ LAYER 3 — VALIDATION & GUARDRAILS                    │
+│ Function: validate_plan()                            │
 │                                                      │
-│ 🚫 NO LLM USED HERE                                  │
-│                                                      │
+│ 🚫 NO LLM USED HERE                                 │
 │ ✔ Table whitelist validation                        │
 │ ✔ Column whitelist validation                       │
 │ ✔ Data type enforcement                             │
@@ -63,41 +61,39 @@ The system converts natural language questions into validated SQL queries and ex
                             |
                             v
 ┌──────────────────────────────────────────────────────┐
-│ LAYER 4 — SQL BUILDER                               │
-│ Function: build_sql()                               │
+│ LAYER 4 — SQL BUILDER                                │
+│ Function: build_sql()                                │
 │                                                      │
 │ 🚫 NO LLM USED HERE                                  │
-│                                                      │
-│ → Deterministic SQL generation                      │
-│ → Parameterized queries (prevents injection)        │
-│ → Controlled JOIN detection                         │
+│ → Deterministic SQL generation                       │
+│ → Parameterized queries (prevents injection)         │
+│ → Controlled JOIN detection                          │
 └──────────────────────────────────────────────────────┘
                             |
                             v
 ┌──────────────────────────────────────────────────────┐
-│ EXECUTION LAYER                                     │
-│ Function: execute_sql()                             │
+│ EXECUTION LAYER                                      │
+│ Function: execute_sql()                              │
 │                                                      │
 │ 🚫 NO LLM USED HERE                                  │
-│                                                      │
-│ → SQLite execution                                  │
-│ → Returns raw rows                                  │
+│ → SQLite execution                                   │
+│ → Returns raw rows                                   │
 └──────────────────────────────────────────────────────┘
                             |
                             v
 ┌──────────────────────────────────────────────────────┐
-│ LAYER 5 — ANSWER GENERATION                         │
-│ Function: generate_answer()                         │
+│ LAYER 5 — ANSWER GENERATION                          │
+│ Function: generate_answer()                          │
 │                                                      │
 │ 🔹 LLM USED HERE                                     │
-│ → Converts SQL result into natural language         │
+│ → Converts SQL result into natural language          │
 └──────────────────────────────────────────────────────┘
                             |
                             v
 +------------------------------------------------------+
-|                  FINAL RESPONSE                      |
+|                    FINAL RESPONSE                    |
 +------------------------------------------------------+
-
+```
 
 User Question  
 → Query Classification  
