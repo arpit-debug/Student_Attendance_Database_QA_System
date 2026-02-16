@@ -1,225 +1,274 @@
-# 🎓 Student Attendance Database QA System  
-Natural Language → SQL Guardrailed Assistant
+🎓 Student Attendance Database QA System
 
-This project is a **Student Database Question Answering System** built using:
+Natural Language → Guardrailed SQL Assistant
 
-- Streamlit (UI)
-- LangChain + Ollama (LLM layer)
-- SQLite (local database)
-- Guardrailed structured SQL generation pipeline
+A structured, safe, and deterministic Question Answering system that converts natural language into validated SQL queries.
 
-The system converts natural language questions into validated SQL queries and executes them safely.
+Built with:
 
----
+Streamlit (UI)
+
+LangChain + Ollama (LLM reasoning layer)
+
+SQLite (Local database)
+
+Multi-layer guardrailed SQL pipeline
+
 # 📌 System Daigram
 ![Demo of the app](Diagram.png)
-# 📌 System Architecture
 
-```text
-+------------------------------------------------------+
-|                    USER (CLI / UI)                   |
-+---------------------------+--------------------------+
-                            |
-                            v
-+------------------------------------------------------+
-|                run_query(user_input)                 |
-+------------------------------------------------------+
-                            |
-                            v
-┌──────────────────────────────────────────────────────┐
-│ LAYER 1 — QUERY CLASSIFICATION                       │
-│ Function: classify_query()                           │
-│                                                      │
-│ 🔹 LLM USED HERE                                     │
-│ → Determines intent: aggregate | list | lookup       │
-└──────────────────────────────────────────────────────┘
-                            |
-                            v
-┌──────────────────────────────────────────────────────┐
-│ LAYER 2 — STRUCTURED PLAN EXTRACTION                 │
-│ Function: extract_plan()                             │
-│                                                      │
-│ 🔹 LLM USED HERE                                     │
-│ → Generates Structured JSON Plan                     │
-│   { table, select_column, aggregation, filters }     │
-└──────────────────────────────────────────────────────┘
-                            |
-                            v
-┌──────────────────────────────────────────────────────┐
-│ LAYER 3 — VALIDATION & GUARDRAILS                    │
-│ Function: validate_plan()                            │
-│                                                      │
-│ 🚫 NO LLM USED HERE                                 │
-│ ✔ Table whitelist validation                        │
-│ ✔ Column whitelist validation                       │
-│ ✔ Data type enforcement                             │
-│ ✔ Date normalization                                │
-│ ✔ Range conversion (BETWEEN)                        │
-│ ✔ LIKE removal for dates                            │
-│ ✔ Operator correction                               │
-└──────────────────────────────────────────────────────┘
-                            |
-                            v
-┌──────────────────────────────────────────────────────┐
-│ LAYER 4 — SQL BUILDER                                │
-│ Function: build_sql()                                │
-│                                                      │
-│ 🚫 NO LLM USED HERE                                  │
-│ → Deterministic SQL generation                       │
-│ → Parameterized queries (prevents injection)         │
-│ → Controlled JOIN detection                          │
-└──────────────────────────────────────────────────────┘
-                            |
-                            v
-┌──────────────────────────────────────────────────────┐
-│ EXECUTION LAYER                                      │
-│ Function: execute_sql()                              │
-│                                                      │
-│ 🚫 NO LLM USED HERE                                  │
-│ → SQLite execution                                   │
-│ → Returns raw rows                                   │
-└──────────────────────────────────────────────────────┘
-                            |
-                            v
-┌──────────────────────────────────────────────────────┐
-│ LAYER 5 — ANSWER GENERATION                          │
-│ Function: generate_answer()                          │
-│                                                      │
-│ 🔹 LLM USED HERE                                     │
-│ → Converts SQL result into natural language          │
-└──────────────────────────────────────────────────────┘
-                            |
-                            v
-+------------------------------------------------------+
-|                    FINAL RESPONSE                    |
-+------------------------------------------------------+
-```
+📌 System Overview
 
-User Question  
-→ Query Classification  
-→ Structured Plan Extraction (JSON)  
-→ Validation  
-→ Deterministic SQL Builder  
-→ Execution  
-→ Natural Language Answer  
+User Question
+→ Query Classification (LLM)
+→ Structured Plan Extraction (LLM → JSON)
+→ Validation & Guardrails (Deterministic)
+→ SQL Builder (Deterministic)
+→ SQLite Execution
+→ Natural Language Answer (LLM)
 
-The LLM is used only for reasoning and planning.  
-SQL execution is deterministic and validated.
+The LLM is never allowed to execute SQL directly.
+All SQL is validated, parameterized, and deterministic.
 
----
 
-# 🗄 Database Tables
+🧠 Architecture
+USER (Streamlit UI)
+        │
+        ▼
+run_query(user_input)
+        │
+        ▼
+LAYER 1 — classify_query()      ✅ LLM
+→ Detects intent (aggregate | list | lookup)
 
-The system contains 3 main tables:
+        ▼
+LAYER 2 — extract_plan()        ✅ LLM
+→ Generates structured JSON:
+  {
+    table,
+    select_column,
+    aggregation,
+    filters
+  }
 
----
+        ▼
+LAYER 3 — validate_plan()       ❌ No LLM
+→ Table whitelist
+→ Column whitelist
+→ Type enforcement
+→ Date normalization
+→ Range → BETWEEN conversion
+→ Operator correction
+→ LIKE removal for date fields
 
-## 1️⃣ detailed_attendance
+        ▼
+LAYER 4 — build_sql()           ❌ No LLM
+→ Deterministic SQL builder
+→ Parameterized queries
+→ Safe JOIN handling
 
-Raw session-level attendance records.  
-Each row represents one student for one session.
+        ▼
+EXECUTE (SQLite)                ❌ No LLM
 
-**Key Columns:**
+        ▼
+LAYER 5 — generate_answer()     ✅ LLM
+→ Converts result rows into natural language
 
-- Student (Full name)
-- SIMS_ID (Student ID)
-- DOB (Date of Birth)
-- DOA (Date of Admission)
-- Gender
-- Mark (Attendance code)
-- Mark_date (Session date)
-- AM/PM (Session type)
-- Year_taught_in_Code (Year group)
-- Key_Stage
-- Reg (Registration group)
+🗄 Database Tables
+1️⃣ detailed_attendance
 
----
+Session-level attendance records.
 
-## 2️⃣ attendance_summary
+Key columns:
 
-Aggregated yearly attendance totals per student.
+Student
 
-**Includes counts of attendance codes such as:**
+SIMS_ID
 
-- Present (/ and \)
-- Illness (I)
-- Authorised absence (C)
-- Late (L)
-- Unauthorised absence (O)
-- Grand_Total (Total sessions)
+DOB
 
----
+DOA
 
-## 3️⃣ attendance_mark_description
+Gender
 
-Reference table describing attendance codes.
+Mark
 
-**Columns:**
+Mark_date
 
-- Reg_Codes
-- Description
-- Lesson_Codes
-- Statistical_Meaning
-- Physical_Meaning
-- Status (Present / Absence)
+AM_PM
 
----
+Year_taught_in_Code
 
-# ❓ What Type of Questions Can You Ask?
+Key_Stage
 
-The system supports:
+Reg
 
----
+2️⃣ attendance_summary
 
-## 🔹 1. Record Lookup
+Year-level aggregated totals per student.
 
-Examples:
+Includes:
 
-- What is the date of birth of Arjan Jha Crasto?
-- What is the admission date of SIMS ID 12345?
-- What year is John Smith in?
+Present
 
----
+Illness
 
-## 🔹 2. Aggregate Queries
+Authorised absence
 
-Examples:
+Late
 
-- How many students were born in March 2016?
-- How many students are in Year 3?
-- Count students with illness marks.
-- How many authorised absences are recorded?
+Unauthorised absence
 
----
+Grand_Total
 
-## 🔹 3. Attribute Lookup
+3️⃣ attendance_mark_description
 
-Examples:
+Reference table for attendance codes.
 
-- What does mark code C mean?
-- What is the meaning of attendance code I?
+Columns:
 
----
+Reg_Codes
 
-## 🔹 4. List Queries
+Description
 
-Examples:
+Statistical_Meaning
 
-- List all students in Year 4.
-- Show students in registration group A1.
-- List students admitted in 2022.
+Physical_Meaning
 
----
+Status
 
-# 🚀 How to Run
+❓ Supported Question Types
+🔹 Record Lookup
 
----
+What is the date of birth of Arjan Jha Crasto?
 
-## Step 1: Install Ollama
+What is the admission date of SIMS ID 12345?
 
-Download and install from:
+🔹 Aggregate Queries
+
+How many students were born in March 2016?
+
+Count illness marks.
+
+How many students are in Year 3?
+
+🔹 Attribute Lookup
+
+What does mark code C mean?
+
+🔹 List Queries
+
+List students in Year 4.
+
+Show students admitted in 2022.
+
+🚀 Setup & Run Instructions
+1️⃣ Install Ollama
+
+Download and install:
 
 https://ollama.com
 
 Verify installation:
 
+ollama --version
+
+
+Pull required model (example: llama3):
+
+ollama pull llama3
+
+
+Test model:
+
+ollama run llama3
+
+2️⃣ Clone Project
+git clone <your-repo-url>
+cd student-attendance-qa
+
+3️⃣ Create Virtual Environment (Recommended)
+python -m venv venv
+
+
+Activate:
+
+Windows
+
+venv\Scripts\activate
+
+
+Mac/Linux
+
+source venv/bin/activate
+
+4️⃣ Install Requirements
+
+Make sure you have a requirements.txt file, then run:
+
+pip install -r requirements.txt
+
+5️⃣ Run the Application
+
+If using Streamlit:
+
+streamlit run app.py
+
+
+If using CLI script:
+
+python main.py
+
+📁 Example requirements.txt
+streamlit
+langchain
+langchain-community
+ollama
+sqlite3
+pydantic
+
+🔒 Security Design
+
+No raw SQL from LLM
+
+Strict table & column whitelist
+
+Parameterized queries
+
+Deterministic SQL builder
+
+Date range normalization
+
+Operator correction
+
+Guardrail validation before execution
+
+🧪 Example Query
+
+User asks:
+
+How many students were born in March 2016?
+
+Generated SQL:
+
+SELECT COUNT(DISTINCT DOB)
+FROM detailed_attendance
+WHERE DOB BETWEEN ? AND ?;
+
+📌 Key Principles
+
+LLM for reasoning only
+
+Deterministic SQL execution
+
+Guardrailed architecture
+
+Safe parameter binding
+
+Modular layered pipeline
+
+📜 License
+
+MIT License
+
+If you need help extending the system (range logic, joins, advanced filters, multi-table queries), you can expand the validation and SQL builder layers without modifying the LLM logic.
