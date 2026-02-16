@@ -1,0 +1,6 @@
+streamlit==1.32.2
+langchain==0.1.20
+langchain-community==0.0.38
+ollama==0.1.8
+pydantic==2.6.4
+sqlite-utils==3.36
